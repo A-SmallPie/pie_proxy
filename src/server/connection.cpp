@@ -3,10 +3,25 @@
 #include <iostream>
 #include <vector>
 #include <sys/socket.h>
+#include <unistd.h>
+
+Connection::Connection(size_t buffer_size)
+:BUFFER_SIZE(buffer_size){
+    client_socket_ = -1;
+    client_ip_ = "";
+}
 
 Connection::Connection(int client_socket, std::string client_ip, size_t buffer_size)
 :BUFFER_SIZE(buffer_size){
     client_socket_ = client_socket;
+    client_ip_ = client_ip;
+}
+
+void Connection::set_socket(int client_socket){
+    client_socket_ = client_socket;
+}
+
+void Connection::set_ip(std::string client_ip){
     client_ip_ = client_ip;
 }
 
@@ -25,7 +40,7 @@ void Connection::recv_message(){
         else if(bytes_read==0){
             // 客户端关闭（发送fin包）
             std::cout<<"客户端IP: "<<client_ip_<<"关闭"<<std::endl;
-            event_callback_(client_socket_, "REMOVE_FD");
+            event_callback_(client_socket_, "CLOSE_CONNECTION");
             break;
         }
         else if(errno == EAGAIN || errno == EWOULDBLOCK){
@@ -36,10 +51,9 @@ void Connection::recv_message(){
         }
         else{
             std::cerr<<"客户端"<<client_ip_<<"发生错误:"<<errno<<std::endl;
-            event_callback_(client_socket_, "REMOVE_FD");
+            event_callback_(client_socket_, "CLOSE_CONNECTION");
             break;
         }
-        
     }
 }
 
@@ -49,10 +63,11 @@ void Connection::send_message(){
     std::cout<<"无数据可读"<<std::endl;
 }
 
-void Connection::close(int epoll_fd){
-    close(client_socket_);
-    epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_socket_, NULL);
-    std::cout<<"客户端成功关闭"<<std::endl;
+void Connection::reset(){
+    client_socket_ = -1;
+    client_ip_ = "";
+    send_buffer_.erase();
+    recv_buffer_.erase();
 }
 
 int Connection::get_socket(){

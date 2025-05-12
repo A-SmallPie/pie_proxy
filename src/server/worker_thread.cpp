@@ -4,13 +4,14 @@
 #include <fcntl.h>
 #include <sys/epoll.h>
 #include <unistd.h>
+#include "connection_pool.hpp"
 #include "connection.hpp"
 #include "worker_thread.hpp"
 #include "task_queue.hpp"
 #include <sys/socket.h>
 
-WorkerThread::WorkerThread(size_t max_event=64)
-    :MAX_EVENT(max_event){
+WorkerThread::WorkerThread(size_t max_event=64, ConnectionPool& pool)
+    :MAX_EVENT(max_event), pool_(pool){
     epoll_fd_ = epoll_create1(0);
     if(epoll_fd_<0){
         std::cerr<<"创建epoll实例失败"<<std::endl;
@@ -38,7 +39,8 @@ void WorkerThread::run(){
             event.data.fd = new_client_socket;
             event.data.ptr = new_connection;
             if(epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, new_client_socket, &event)==-1){
-                new_connection->close(epoll_fd_);
+                close(new_client_socket);
+                pool_.release(new_connection);
                 std::cerr<<"添加连接事件监听失败"<<std::endl;
             }
         }
@@ -54,11 +56,12 @@ void WorkerThread::run(){
             // 非阻塞模式下不应循环调用 recv()，而是依赖 epoll_wait 的事件驱动。
             // 不能只靠这两个事件(EPOLLHUP,EPOLLERR)监听关闭
             if(events[i].events & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)){
-                connection->close(epoll_fd_);
+                close(client_socket);
+                pool_.release(connection);
                 continue;
             }
             else if(events[i].events & EPOLLIN){
-                
+                connection->recv_message();
             }
 
         }
@@ -66,5 +69,5 @@ void WorkerThread::run(){
 }
 
 void WorkerThread::modify_epoll_events(int fd, std::string events){
-    
+    // 处理各种事务， 暂不实现
 }
