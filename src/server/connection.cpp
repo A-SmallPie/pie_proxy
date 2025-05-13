@@ -5,23 +5,9 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-Connection::Connection(size_t buffer_size)
-:BUFFER_SIZE(buffer_size){
-    client_socket_ = -1;
-    client_ip_ = "";
-}
-
 Connection::Connection(int client_socket, std::string client_ip, size_t buffer_size)
 :BUFFER_SIZE(buffer_size){
     client_socket_ = client_socket;
-    client_ip_ = client_ip;
-}
-
-void Connection::set_socket(int client_socket){
-    client_socket_ = client_socket;
-}
-
-void Connection::set_ip(std::string client_ip){
     client_ip_ = client_ip;
 }
 
@@ -61,13 +47,6 @@ void Connection::send_message(){
     if(send(client_socket_, send_buffer_.data(), send_buffer_.size(), 0)<0)
         std::cerr<<"发送客户端回信失败"<<std::endl;
     std::cout<<"无数据可读"<<std::endl;
-}
-
-void Connection::reset(){
-    client_socket_ = -1;
-    client_ip_ = "";
-    send_buffer_.erase();
-    recv_buffer_.erase();
 }
 
 int Connection::get_socket(){

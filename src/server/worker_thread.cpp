@@ -10,8 +10,8 @@
 #include "task_queue.hpp"
 #include <sys/socket.h>
 
-WorkerThread::WorkerThread(size_t max_event=64, ConnectionPool& pool)
-    :MAX_EVENT(max_event), pool_(pool){
+WorkerThread::WorkerThread(size_t max_event=64)
+    :MAX_EVENT(max_event){
     epoll_fd_ = epoll_create1(0);
     if(epoll_fd_<0){
         std::cerr<<"创建epoll实例失败"<<std::endl;
