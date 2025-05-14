@@ -10,17 +10,18 @@
 资源描述符本质上就是一个int，所以可以直接赋值，但是必须保证只有一个线程关闭他
 如果存智能指针，那么在将连接从epoll中移除的时候就不用手动关闭了
 */
+class Task;
 class Connection;
 
 class TaskQueue{
 private:
-    std::queue<Connection*> queue_;
+    std::queue<Task*> queue_;
     mutable std::mutex mutex_;
     std::condition_variable cv_;
 public:
-    void push(Connection* connection);
-    void pop(Connection** connection);
-    bool try_pop(Connection** connection);
+    void push(Task* task);
+    void pop(Task** task);
+    bool try_pop(Task** task);
     bool is_empty() const;
     size_t size() const;
 };

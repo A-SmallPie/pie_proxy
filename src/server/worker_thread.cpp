@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <sys/epoll.h>
 #include <unistd.h>
+#include "task.hpp"
 #include "connection_pool.hpp"
 #include "connection.hpp"
 #include "worker_thread.hpp"
@@ -22,26 +23,11 @@ WorkerThread::WorkerThread(size_t max_event=64)
 void WorkerThread::run(){
     struct epoll_event events[MAX_EVENT];
     while(true){
-        Connection* new_connection;
-        if(task_queue_.try_pop(&new_connection)){
-            /* 给文件描述符设置非阻塞模式，如果不设置，且客户端数据没有就绪时，read会卡住线程
-            虽然epoll只有在数据就绪的时候才会发送通知，但是如果返回的数据被其他线程取走了
-            或者数据被内核协议栈丢弃（客户端发送rst包）时，有可能读不到数据*/
-            int new_client_socket = new_connection->get_socket();
-            int flags = fcntl(new_client_socket, F_GETFL, 0);
-            fcntl(new_client_socket, F_SETFL, flags | O_NONBLOCK);
-
-            /*添加事件监听， 不应该默认监听可写事件，因为这样会导致持续返回可写事件
-            如果要监听可写事件，可以等缓冲区满了之后再监听可写事件
-            设置epollrdhup是需要检测对方是否半关闭连接，对端不再会写数据*/
-            struct epoll_event event;
-            event.events = EPOLLIN | EPOLLRDHUP | EPOLLET;
-            event.data.fd = new_client_socket;
-            event.data.ptr = new_connection;
-            if(epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, new_client_socket, &event)==-1){
-                close(new_client_socket);
-                pool_.release(new_connection);
-                std::cerr<<"添加连接事件监听失败"<<std::endl;
+        Task* task;
+        if(task_queue_.try_pop(&task)){
+            switch(task->type){
+                case TaskType::ADD_CONNECTION: handle_add_connection(task->connection); break;
+                case TaskType::DEL_CONNECTION: handle_del_connection(task->connection); break;
             }
         }
         // 如果等待不到就绪的事件就去偷任务还是在任务队列里没有任务就直接去偷任务
@@ -56,16 +42,43 @@ void WorkerThread::run(){
             // 非阻塞模式下不应循环调用 recv()，而是依赖 epoll_wait 的事件驱动。
             // 不能只靠这两个事件(EPOLLHUP,EPOLLERR)监听关闭
             if(events[i].events & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)){
-                close(client_socket);
-                pool_.release(connection);
+                handle_del_connection(connection);
                 continue;
             }
             else if(events[i].events & EPOLLIN){
                 connection->recv_message();
             }
-
         }
     }
+}
+
+void WorkerThread::handle_add_connection(Connection* connection){
+    /* 给文件描述符设置非阻塞模式，如果不设置，且客户端数据没有就绪时，read会卡住线程
+    虽然epoll只有在数据就绪的时候才会发送通知，但是如果返回的数据被其他线程取走了
+    或者数据被内核协议栈丢弃（客户端发送rst包）时，有可能读不到数据*/
+    int new_client_socket = connection->get_socket();
+    int flags = fcntl(new_client_socket, F_GETFL, 0);
+    fcntl(new_client_socket, F_SETFL, flags | O_NONBLOCK);
+
+    /*添加事件监听， 不应该默认监听可写事件，因为这样会导致持续返回可写事件
+    如果要监听可写事件，可以等缓冲区满了之后再监听可写事件
+    设置epollrdhup是需要检测对方是否半关闭连接，对端不再会写数据*/
+    struct epoll_event event;
+    event.events = EPOLLIN | EPOLLRDHUP | EPOLLET;
+    event.data.fd = new_client_socket;
+    event.data.ptr = connection;
+    if(epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, new_client_socket, &event)==-1){
+        handle_del_connection(connection);
+        std::cerr<<"添加连接事件监听失败"<<std::endl;
+    }
+}
+
+void WorkerThread::handle_del_connection(Connection* connection){
+    if(epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, connection->get_socket(), nullptr)==-1)
+        std::cerr<<"移除监听失败:"<<errno<<std::endl;
+    close(connection->get_socket());
+    std::cout<<"已关闭来自"<<connection->get_ip()<<"的连接"<<std::endl;
+    delete connection;
 }
 
 void WorkerThread::modify_epoll_events(int fd, std::string events){
