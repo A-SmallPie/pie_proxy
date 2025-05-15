@@ -10,10 +10,10 @@ private:
 public:
     WorkerThread(size_t max_event);
     ~WorkerThread();
-    bool add_task(Connection *connection);
-    void modify_epoll_events(int fd, std::string events);
+    void add_task(Task* task);
+    void modify_epoll_events(Connection* connection, uint32_t op);
     void handle_add_connection(Connection* connection);
     void handle_del_connection(Connection* connection);
-    int get_load();
+    size_t get_load();
     void run();
 };

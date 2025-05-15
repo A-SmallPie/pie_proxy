@@ -1,22 +1,16 @@
-#include <iostream>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <ifaddrs.h>
-#include <netdb.h>
 #include "thread_pool.hpp"
 #include "worker_thread.hpp"
 
 
-ThreadPool::ThreadPool(size_t thread_count){
-    for(size_t i=0; i<thread_count; i++){
-        
+ThreadPool::ThreadPool(size_t thread_num, size_t max_event)
+:WORKER_NUM(thread_num){
+    current_ptr_=0;
+    for(size_t i=0; i<thread_num; i++){
+        workers_.push_back(std::make_unique<WorkerThread>(max_event));
     }
 }
 
-void ThreadPool::dispatchTask(int client_socket){
-
+void ThreadPool::dispatchTask(Task* task){
+    current_ptr_ = (current_ptr_+1)%WORKER_NUM;
+    workers_[current_ptr_-1]->add_task(task);
 }

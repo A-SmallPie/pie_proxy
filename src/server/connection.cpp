@@ -11,7 +11,7 @@ Connection::Connection(int client_socket, std::string client_ip, size_t buffer_s
     client_ip_ = client_ip;
 }
 
-void Connection::set_event_callback(std::function<void(int, std::string)> event_callback){
+void Connection::set_event_callback(std::function<void(Connection*, uint32_t)> event_callback){
     event_callback_ = std::move(event_callback);
 }
 
@@ -26,7 +26,7 @@ void Connection::recv_message(){
         else if(bytes_read==0){
             // 客户端关闭（发送fin包）
             std::cout<<"客户端IP: "<<client_ip_<<"关闭"<<std::endl;
-            event_callback_(client_socket_, "CLOSE_CONNECTION");
+            event_callback_(this, 1);
             break;
         }
         else if(errno == EAGAIN || errno == EWOULDBLOCK){
@@ -37,7 +37,7 @@ void Connection::recv_message(){
         }
         else{
             std::cerr<<"客户端"<<client_ip_<<"发生错误:"<<errno<<std::endl;
-            event_callback_(client_socket_, "CLOSE_CONNECTION");
+            event_callback_(this, 1);
             break;
         }
     }

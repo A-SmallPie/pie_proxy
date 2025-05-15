@@ -1,14 +1,14 @@
+#include "task.hpp"
+#include "connection_pool.hpp"
+#include "connection.hpp"
+#include "worker_thread.hpp"
+#include "task_queue.hpp"
 #include <vector>
 #include <memory>
 #include <iostream>
 #include <fcntl.h>
 #include <sys/epoll.h>
 #include <unistd.h>
-#include "task.hpp"
-#include "connection_pool.hpp"
-#include "connection.hpp"
-#include "worker_thread.hpp"
-#include "task_queue.hpp"
 #include <sys/socket.h>
 
 WorkerThread::WorkerThread(size_t max_event=64)
@@ -81,6 +81,22 @@ void WorkerThread::handle_del_connection(Connection* connection){
     delete connection;
 }
 
-void WorkerThread::modify_epoll_events(int fd, std::string events){
+void WorkerThread::modify_epoll_events(Connection* connection, uint32_t op){
     // 处理各种事务， 暂不实现
+    switch(op){
+        case 1:
+            add_task(new Task(connection, TaskType::DEL_CONNECTION));
+            break;
+        default:
+            break;
+    }
 }
+
+void WorkerThread::add_task(Task* task){
+    task_queue_.push(task);
+}
+
+size_t WorkerThread::get_load(){
+    return 1;
+}
+

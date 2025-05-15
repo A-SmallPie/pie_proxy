@@ -1,3 +1,5 @@
+#include "thread_pool.hpp"
+#include "task.hpp"
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
@@ -45,6 +47,7 @@ int main(int argc, char *argv[])
     else{
         port = std::atoi(argv[1]);
     }
+    ThreadPool* thread_pool = new ThreadPool(2, 64);
     /*
     第一个参数为地址族，在这里表示用ipv4进行通信
     第二个参数表示建立可靠的连接，即使用tcp进行通信
@@ -116,27 +119,7 @@ int main(int argc, char *argv[])
         inet_ntop(AF_INET, &client_addr.sin_addr, client_IP, INET_ADDRSTRLEN);
         std::cout<<"客户端连接："<<client_IP<<": "<<ntohs(client_addr.sin_addr.s_addr)<<std::endl;
         
-        char buffer[BUFFER_SIZE];
-        while(true){
-
-            ssize_t bytes_read = recv(client_socket, buffer, BUFFER_SIZE-1, 0);
-            if(bytes_read<=0){
-                break;
-            }
-
-            // 确保缓冲区以null结尾
-            buffer[bytes_read]='\0';
-            
-            std::cout<<"接受到的数据: "<<buffer<<std::endl;
-
-            if(send(client_socket, buffer, bytes_read, 0)<0){
-                std::cerr<<"服务端发送数据失败"<<std::endl;
-                break;
-            }
-
-        }
-        close(client_socket);
-        std::cout<<"客户端关闭："<<client_IP<<": "<<ntohs(client_addr.sin_addr.s_addr)<<std::endl;
+        thread_pool->dispatchTask(new Task(new Connection(client_socket, client_IP, 4096), TaskType::ADD_CONNECTION));
 
     }
     close(server_socket);
