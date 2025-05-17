@@ -1,5 +1,7 @@
-#include "thread_pool.hpp"
-#include "worker_thread.hpp"
+#include <thread>
+#include "server/task.hpp"
+#include "server/thread_pool.hpp"
+#include "server/worker_thread.hpp"
 
 
 ThreadPool::ThreadPool(size_t thread_num, size_t max_event)
@@ -10,7 +12,26 @@ ThreadPool::ThreadPool(size_t thread_num, size_t max_event)
     }
 }
 
+ThreadPool::~ThreadPool(){
+    for(auto& t:threads_){
+        if(t.joinable()){
+            t.join();
+        }
+    }
+}
+
+void ThreadPool::run_all(){
+    // 不能用for(:)循环，因为容器里面存储的是unique指针
+    for(size_t i=0; i<workers_.size(); i++){
+        threads_.emplace_back( [this, i]{
+                workers_[i]->run();
+            }
+        );
+    }
+}
+
 void ThreadPool::dispatchTask(Task* task){
-    current_ptr_ = (current_ptr_+1)%WORKER_NUM;
-    workers_[current_ptr_-1]->add_task(task);
+    size_t index = current_ptr_%WORKER_NUM;
+    workers_[index]->add_task(task);
+    current_ptr_++;
 }

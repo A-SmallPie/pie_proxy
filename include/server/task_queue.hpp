@@ -1,3 +1,4 @@
+#pragma once
 #include <queue>
 #include <mutex>
 #include <condition_variable>
@@ -19,6 +20,8 @@ private:
     mutable std::mutex mutex_;
     std::condition_variable cv_;
 public:
+    TaskQueue();
+    ~TaskQueue();
     void push(Task* task);
     void pop(Task** task);
     bool try_pop(Task** task);

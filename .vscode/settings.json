@@ -45,6 +45,7 @@
         "mutex": "cpp",
         "thread": "cpp",
         "functional": "cpp",
-        "iterator": "cpp"
+        "iterator": "cpp",
+        "map": "cpp"
     }
 }

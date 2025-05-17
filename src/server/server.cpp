@@ -1,5 +1,6 @@
-#include "thread_pool.hpp"
-#include "task.hpp"
+#include "server/thread_pool.hpp"
+#include "server/connection.hpp"
+#include "server/task.hpp"
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
@@ -48,6 +49,7 @@ int main(int argc, char *argv[])
         port = std::atoi(argv[1]);
     }
     ThreadPool* thread_pool = new ThreadPool(2, 64);
+    thread_pool->run_all();
     /*
     第一个参数为地址族，在这里表示用ipv4进行通信
     第二个参数表示建立可靠的连接，即使用tcp进行通信

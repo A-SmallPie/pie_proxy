@@ -1,7 +1,15 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable>
-#include "task_queue.hpp"
+#include "server/task_queue.hpp"
+
+TaskQueue::TaskQueue(){
+
+}
+
+TaskQueue::~TaskQueue(){
+
+}
 
 void TaskQueue::push(Task* task){
     /*lock_guard自动加锁解锁，首先尝试获取锁，在mutex的作用域结束之后自动解锁

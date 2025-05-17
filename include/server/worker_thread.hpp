@@ -1,10 +1,11 @@
+#pragma once
+#include "server/task_queue.hpp"
 class TaskQueue;
-class ConnectionPool;
 
 class WorkerThread{
 private:
     int epoll_fd_;
-    TaskQueue task_queue_;
+    std::unique_ptr<TaskQueue> task_queue_;
     const int MAX_EVENT;
 
 public:
