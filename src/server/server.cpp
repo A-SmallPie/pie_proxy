@@ -18,11 +18,11 @@ void listAllServerIPs() {
     struct ifaddrs *ifaddr, *ifa;
     
     if (getifaddrs(&ifaddr) == -1) {
-        perror("获取网络接口失败");
+        perror("[主线程] 获取网络接口失败");
         return;
     }
 
-    std::cout << "服务器所有可用IP地址:" << std::endl;
+    std::cout <<"[主线程] 服务器所有可用IP地址:" << std::endl;
     for (ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
         if (ifa->ifa_addr == nullptr || ifa->ifa_addr->sa_family != AF_INET)
             continue;
@@ -31,7 +31,7 @@ void listAllServerIPs() {
         char ip[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &addr->sin_addr, ip, sizeof(ip));
         
-        std::cout << " - " << ifa->ifa_name << ": " << ip << std::endl;
+        std::cout << "   - " << ifa->ifa_name << ": " << ip << std::endl;
     }
 
     freeifaddrs(ifaddr);
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 {
     int port;
     if(argc<2){
-        std::cerr<<"用法: "<<argv[0]<<" <端口>"<<std::endl;
+        std::cerr<<"[主线程] 用法: "<<argv[0]<<" <端口>"<<std::endl;
         return 1;
     }
     else{
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     int server_socket = socket(AF_INET, SOCK_STREAM, 0);
 
     if(server_socket<0){
-        std::cout<<"无法创套接字!"<<std::endl;
+        std::cerr<<"[主线程] 无法创套接字!"<<std::endl;
         return 1;
     }
     /*
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
     */
     int opt=1;
     if(setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0){
-        std::cerr<<"设置套接子选项失败"<<std::endl;
+        std::cerr<<"[主线程] 设置套接子选项失败"<<std::endl;
         close(server_socket);
         return 1;
     }
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
     server_addr.sin_port = htons(port);         // 设置网络端口号（转为网络字节序：大端）
 
     if(bind(server_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0){
-        std::cerr<<"绑定端口失败"<<std::endl;
+        std::cerr<<"[主线程] 绑定端口失败"<<std::endl;
         close(server_socket);
         return 1;
     }
@@ -93,12 +93,12 @@ int main(int argc, char *argv[])
     listen会让操作系统创建一个等待连接队列，socket开始鉴定这个端口上的syn包
     */
     if(listen(server_socket, BACK_LOG) < 0){
-        std::cerr<<"监听端口失败"<<std::endl;
+        std::cerr<<"[主线程] 监听端口失败"<<std::endl;
         close(server_socket);
         return 1;
     }
 
-    std::cout<<"开始监听端口："<<port<<std::endl;
+    std::cout<<"[主线程] 开始监听端口："<<port<<std::endl;
     listAllServerIPs();
 
     while(true){
@@ -112,20 +112,20 @@ int main(int argc, char *argv[])
         */
         int client_socket = accept(server_socket, (struct sockaddr*)&client_addr, &client_addr_len);
         if(client_socket < 0){
-            std::cerr<<"接受连接失败"<<std::endl;
+            std::cerr<<"[主线程] 接受连接失败"<<std::endl;
         }
         
         // 输出建立连接的客户端信息
         char client_IP[INET_ADDRSTRLEN];
         // 将二进制ip地址转化为人类可读的ip地址
         inet_ntop(AF_INET, &client_addr.sin_addr, client_IP, INET_ADDRSTRLEN);
-        std::cout<<"客户端连接："<<client_IP<<": "<<ntohs(client_addr.sin_addr.s_addr)<<std::endl;
+        std::cout<<"[主线程] 接受端连接："<<client_IP<<": "<<ntohs(client_addr.sin_addr.s_addr)<<std::endl;
         
         thread_pool->dispatchTask(new Task(new Connection(client_socket, client_IP, 4096), TaskType::ADD_CONNECTION));
 
     }
     close(server_socket);
-    std::cout<<"服务端"<<port<<"已关闭"<<std::endl;
+    std::cout<<"[主线程] 服务端"<<port<<"已关闭"<<std::endl;
 
     return 0;
 

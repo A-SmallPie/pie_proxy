@@ -9,12 +9,12 @@
 #include <unistd.h>
 #include <sys/socket.h>
 
-WorkerThread::WorkerThread(size_t max_event=64)
-    :MAX_EVENT(max_event){
+WorkerThread::WorkerThread(size_t id, size_t max_event=64)
+    :ID_(id), MAX_EVENT(max_event){
     task_queue_ = std::make_unique<TaskQueue>();
     epoll_fd_ = epoll_create1(0);
     if(epoll_fd_<0){
-        std::cerr<<"创建epoll实例失败"<<std::endl;
+        std::cerr<<"[工作线程] 线程"<<ID_<<": 创建epoll实例失败"<<std::endl;
         exit(EXIT_FAILURE);
     }
 }
@@ -72,16 +72,15 @@ void WorkerThread::handle_add_connection(Connection* connection){
     event.data.ptr = connection;
     if(epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, new_client_socket, &event)==-1){
         handle_del_connection(connection);
-        std::cerr<<"添加连接事件监听失败"<<std::endl;
+        std::cerr<<"[工作线程] 线程"<<ID_<<": 添加连接事件监听失败"<<std::endl;
     }
 }
 
 void WorkerThread::handle_del_connection(Connection* connection){
     if(epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, connection->get_socket(), nullptr)==-1)
-        std::cerr<<"移除监听失败:"<<errno<<std::endl;
+        std::cerr<<"[工作线程] 线程"<<ID_<<": 移除监听失败:"<<errno<<std::endl;
     close(connection->get_socket());
-    task_queue_->push(new Task(connection, TaskType::DEL_CONNECTION));
-    std::cout<<"已关闭来自"<<connection->get_ip()<<"的连接"<<std::endl;
+    std::cout<<"[工作线程] 线程"<<ID_<<": 已关闭来自"<<connection->get_ip()<<"的连接"<<std::endl;
     delete connection;
 }
 
@@ -100,3 +99,6 @@ size_t WorkerThread::get_load(){
     return 1;
 }
 
+size_t WorkerThread::get_id(){
+    return ID_;
+}

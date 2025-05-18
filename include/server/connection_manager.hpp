@@ -5,13 +5,14 @@
 class Connection;
 
 
-class ConnnectionManager{
+class ConnectionManager{
 private:
-    std::unordered_map<int, std::shared_ptr<Connection>> connection_map;
+    std::unordered_map<int, std::shared_ptr<Connection>> connection_map_;
 
 public:
-    ConnnectionManager();
-    ~ConnnectionManager();
-    bool add_connection(int fd, Connection* connection);
-    bool release_connection(int fd);
+    ConnectionManager();
+    ~ConnectionManager();
+    bool add_connection(std::shared_ptr<Connection> connection);
+    bool remove_connection(int fd);
+    size_t remove_time_out_connection();
 };
