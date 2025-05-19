@@ -13,9 +13,7 @@ Connection::Connection(int client_socket, std::string client_ip, size_t buffer_s
     client_ip_ = client_ip;
 }
 
-Connection::~Connection(){
-    
-}
+Connection::~Connection() = default;
 
 void Connection::set_event_callback(std::function<void(Connection*, uint32_t)> event_callback){
     event_callback_ = std::move(event_callback);

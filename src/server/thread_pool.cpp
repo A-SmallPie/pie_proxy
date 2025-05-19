@@ -45,6 +45,6 @@ void ThreadPool::run_all(){
 void ThreadPool::dispatchTask(Task* task){
     size_t index = current_ptr_%WORKER_NUM;
     std::cout<<"[线程池] 分配连接任务至工作线程: "<<index<<"; 总连接任务数: "<<current_ptr_+1<<std::endl;
-    workers_[index]->add_task(task);
+    workers_[index]->add_task_to_task_queue(task);
     current_ptr_++;
 }

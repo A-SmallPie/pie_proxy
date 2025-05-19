@@ -1,13 +1,9 @@
-#include "connection.hpp"
+#include "server/connection.hpp"
 #include "server/connection_manager.hpp"
 
-ConnectionManager::ConnectionManager(){
+ConnectionManager::ConnectionManager() = default;
 
-}
-
-ConnectionManager::~ConnectionManager(){
-
-}
+ConnectionManager::~ConnectionManager() = default;
 
 bool ConnectionManager::add_connection(std::shared_ptr<Connection> connection){
     connection_map_.emplace(connection->get_socket(), std::move(connection));

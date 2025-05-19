@@ -1,6 +1,7 @@
 #pragma once
 #include <queue>
 #include <mutex>
+#include <memory>
 #include <condition_variable>
 
 /*
@@ -11,20 +12,20 @@
 资源描述符本质上就是一个int，所以可以直接赋值，但是必须保证只有一个线程关闭他
 如果存智能指针，那么在将连接从epoll中移除的时候就不用手动关闭了
 */
-class Task;
+class BaseTask;
 class Connection;
 
 class TaskQueue{
 private:
-    std::queue<Task*> queue_;
+    std::queue<std::unique_ptr<BaseTask>> queue_;
     mutable std::mutex mutex_;
     std::condition_variable cv_;
 public:
     TaskQueue();
     ~TaskQueue();
-    void push(Task* task);
-    void pop(Task** task);
-    bool try_pop(Task** task);
+    void push(std::unique_ptr<BaseTask> task);
+    std::unique_ptr<BaseTask> pop();
+    bool try_pop(std::unique_ptr<BaseTask>& task);
     bool is_empty() const;
     size_t size() const;
 };

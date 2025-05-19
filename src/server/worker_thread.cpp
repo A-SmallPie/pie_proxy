@@ -1,6 +1,8 @@
 #include "server/task.hpp"
+#include "server/task_queue.hpp"
 #include "server/connection.hpp"
 #include "server/worker_thread.hpp"
+#include "server/connection_manager.hpp"
 #include <vector>
 #include <memory>
 #include <iostream>
@@ -11,6 +13,7 @@
 
 WorkerThread::WorkerThread(size_t id, size_t max_event=64)
     :ID_(id), MAX_EVENT(max_event){
+    manager_ = std::make_unique<ConnectionManager>();
     task_queue_ = std::make_unique<TaskQueue>();
     epoll_fd_ = epoll_create1(0);
     if(epoll_fd_<0){
@@ -19,9 +22,7 @@ WorkerThread::WorkerThread(size_t id, size_t max_event=64)
     }
 }
 
-WorkerThread::~WorkerThread(){
-    
-}
+WorkerThread::~WorkerThread() = default;
 
 void WorkerThread::run(){
     struct epoll_event events[MAX_EVENT];
@@ -91,14 +92,30 @@ void WorkerThread::modify_epoll_events(Connection* connection, uint32_t op){
     return;
 }
 
-void WorkerThread::add_task(Task* task){
-    task_queue_->push(task);
-}
-
 size_t WorkerThread::get_load(){
     return 1;
 }
 
 size_t WorkerThread::get_id(){
     return ID_;
+}
+
+
+// 需要使用透传，因为其他类也可能需要添加任务
+void WorkerThread::add_task(Task* task){
+    task_queue_->push(task);
+}
+
+
+// 透传连接管理器方法
+bool WorkerThread::add_connection(std::shared_ptr<Connection> connection){
+    return manager_->add_connection(connection);
+}
+
+bool WorkerThread::remove_connection(int fd){
+    return manager_->remove_connection(fd);
+}
+
+size_t WorkerThread::remove_time_out_connection(){
+    return manager_->remove_time_out_connection();
 }
