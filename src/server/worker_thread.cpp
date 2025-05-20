@@ -1,4 +1,4 @@
-#include "server/task.hpp"
+#include "server/task/base.hpp"
 #include "server/task_queue.hpp"
 #include "server/connection.hpp"
 #include "server/worker_thread.hpp"
@@ -12,31 +12,23 @@
 #include <sys/socket.h>
 
 WorkerThread::WorkerThread(size_t id, size_t max_event=64)
-    :ID_(id), MAX_EVENT(max_event){
-    manager_ = std::make_unique<ConnectionManager>();
-    task_queue_ = std::make_unique<TaskQueue>();
-    epoll_fd_ = epoll_create1(0);
-    if(epoll_fd_<0){
-        std::cerr<<"[工作线程] 线程"<<ID_<<": 创建epoll实例失败"<<std::endl;
-        exit(EXIT_FAILURE);
-    }
+:ID_(id){
+    resource_=std::make_unique<ThreadResource>(id, max_event);
 }
 
 WorkerThread::~WorkerThread() = default;
 
 void WorkerThread::run(){
+    size_t MAX_EVENT = resource_->get_max_events();
     struct epoll_event events[MAX_EVENT];
     while(true){
-        Task* task;
-        if(task_queue_->try_pop(&task)){
-            switch(task->type){
-                case TaskType::ADD_CONNECTION: handle_add_connection(task->connection); break;
-                case TaskType::DEL_CONNECTION: handle_del_connection(task->connection); break;
-            }
+        std::unique_ptr<BaseTask> task;
+        while(resource_->try_pop_task(task)){
+            task->execute(resource_.get());
         }
         // 如果等待不到就绪的事件就去偷任务还是在任务队列里没有任务就直接去偷任务
         // 设置等待时间=0，如果没有就绪的时间就立刻去干别的
-        int n = epoll_wait(epoll_fd_, events, MAX_EVENT, 0);
+        int n = epoll_wait(resource_->get_epoll_fd(), events, MAX_EVENT, 0);
         for(int i=0; i<n; i++){
             Connection* connection = (Connection*)events[i].data.ptr;
 
@@ -71,10 +63,6 @@ void WorkerThread::handle_add_connection(Connection* connection){
     event.events = EPOLLIN | EPOLLRDHUP | EPOLLET;
     event.data.fd = new_client_socket;
     event.data.ptr = connection;
-    if(epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, new_client_socket, &event)==-1){
-        handle_del_connection(connection);
-        std::cerr<<"[工作线程] 线程"<<ID_<<": 添加连接事件监听失败"<<std::endl;
-    }
 }
 
 void WorkerThread::handle_del_connection(Connection* connection){
@@ -92,30 +80,10 @@ void WorkerThread::modify_epoll_events(Connection* connection, uint32_t op){
     return;
 }
 
-size_t WorkerThread::get_load(){
+size_t WorkerThread::get_load() const{
     return 1;
 }
 
-size_t WorkerThread::get_id(){
+size_t WorkerThread::get_id() const{
     return ID_;
-}
-
-
-// 需要使用透传，因为其他类也可能需要添加任务
-void WorkerThread::add_task(Task* task){
-    task_queue_->push(task);
-}
-
-
-// 透传连接管理器方法
-bool WorkerThread::add_connection(std::shared_ptr<Connection> connection){
-    return manager_->add_connection(connection);
-}
-
-bool WorkerThread::remove_connection(int fd){
-    return manager_->remove_connection(fd);
-}
-
-size_t WorkerThread::remove_time_out_connection(){
-    return manager_->remove_time_out_connection();
 }

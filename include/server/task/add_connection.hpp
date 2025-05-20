@@ -5,5 +5,5 @@ private:
     int socket_fd_;
 public:
     explicit AddConnection(int fd);
-    void run(ThreadResource &res);
+    void run(ThreadResource* res);
 };

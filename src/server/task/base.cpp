@@ -5,7 +5,7 @@
 BaseTask::~BaseTask()=default;
 
 template <typename Impl>
-void Task<Impl>::execute(ThreadResource &res){
+void Task<Impl>::execute(ThreadResource* res){
     static_cast<Impl*>(this)->run(res);
 };
 

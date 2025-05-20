@@ -2,13 +2,12 @@
 #include <string>
 #include <functional>
 #include <atomic>
-class TaskQueue;
+class ThreadResource;
 
 class Connection{
 private:
     int client_socket_;
     const int BUFFER_SIZE;
-    TaskQueue* task_queue_;
     std::atomic<bool> is_closed_{false};
     std::string client_ip_;
     std::string send_buffer_;

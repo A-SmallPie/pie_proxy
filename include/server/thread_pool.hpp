@@ -2,9 +2,6 @@
 #include <thread>
 #include <vector>
 #include <memory>
-
-struct Task;
-enum class TaskType;
 class WorkerThread;
 
 class ThreadPool{
