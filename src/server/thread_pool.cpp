@@ -1,7 +1,7 @@
 #include <thread>
 #include <sstream>
 #include <iostream>
-#include "server/task.hpp"
+#include "server/task/base.hpp"
 #include "server/thread_pool.hpp"
 #include "server/worker_thread.hpp"
 
@@ -42,9 +42,9 @@ void ThreadPool::run_all(){
     }
 }
 
-void ThreadPool::dispatchTask(Task* task){
+void ThreadPool::dispatchTask(std::unique_ptr<BaseTask> task){
     size_t index = current_ptr_%WORKER_NUM;
     std::cout<<"[线程池] 分配连接任务至工作线程: "<<index<<"; 总连接任务数: "<<current_ptr_+1<<std::endl;
-    workers_[index]->add_task_to_task_queue(task);
+    workers_[index]->dispatch_task(std::move(task));
     current_ptr_++;
 }

@@ -11,8 +11,7 @@ public:
     WorkerThread(size_t id, size_t max_event);
     ~WorkerThread();
     void modify_epoll_events(Connection* connection, uint32_t op);
-    void handle_add_connection(Connection* connection);
-    void handle_del_connection(Connection* connection);
+    void dispatch_task(std::unique_ptr<BaseTask> task);
     size_t get_load() const;
     size_t get_id() const;
     void run();

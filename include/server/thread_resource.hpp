@@ -1,3 +1,4 @@
+#pragma once
 #include <memory>
 #include <sys/epoll.h>
 #include "task_queue.hpp"
@@ -17,11 +18,12 @@ private:
 public:
     ThreadResource(size_t id, size_t max_event);
     ~ThreadResource();
+    size_t get_id()const;
     // 实现操纵epoll的接口
     size_t get_max_events()const;
     int get_epoll_fd()const;
     bool epoll_add(int fd, epoll_event* event);
-    bool epoll_mod(int fd, int op);
+    bool epoll_mod(int fd, int op, epoll_event* event);
     // 透传任务队列方法
     void add_task(std::unique_ptr<BaseTask> task);
     std::unique_ptr<BaseTask> pop_task();

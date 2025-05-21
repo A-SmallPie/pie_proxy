@@ -12,6 +12,10 @@ ID_(id), MAX_EVENT(max_event), queue_(), manager_(){
 
 ThreadResource::~ThreadResource()=default;
 
+size_t ThreadResource::get_id()const{
+    return ID_;
+}
+
 // 实现操作epoll的接口
 size_t ThreadResource::get_max_events()const{
     return MAX_EVENT;
@@ -30,7 +34,11 @@ bool ThreadResource::epoll_add(int fd, epoll_event* event){
     return true;
 }
 
-bool ThreadResource::epoll_mod(int fd, int op){
+bool ThreadResource::epoll_mod(int fd, int op, epoll_event* event=nullptr){
+    if(epoll_ctl(epoll_fd_, op, fd, event)==-1){
+        std::cerr<<"线程"<<ID_<<" 执行epoll操作失败";
+        return false;
+    }
     return true;
 }
 

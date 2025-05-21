@@ -2,6 +2,7 @@
 #include <thread>
 #include <vector>
 #include <memory>
+class BaseTask;
 class WorkerThread;
 
 class ThreadPool{
@@ -16,5 +17,5 @@ public:
     explicit ThreadPool(size_t thread_num, size_t max_event);
     ~ThreadPool();
     void run_all();
-    void dispatchTask(Task* Task);
+    void dispatchTask(std::unique_ptr<BaseTask> task);
 };

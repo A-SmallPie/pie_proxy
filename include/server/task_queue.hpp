@@ -1,4 +1,3 @@
-#pragma once
 #include <queue>
 #include <mutex>
 #include <memory>

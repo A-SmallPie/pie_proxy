@@ -1,26 +1,23 @@
-#include "server/task.hpp"
-#include "server/task_queue.hpp"
-#include "server/connection.hpp"
 #include <sys/epoll.h>
 #include <iostream>
 #include <vector>
 #include <sys/socket.h>
 #include <unistd.h>
+#include "server/task/base.hpp"
+#include "server/task/del_connection.hpp"
+#include "server/task_queue.hpp"
+#include "server/connection.hpp"
 
-Connection::Connection(int client_socket, std::string client_ip, size_t buffer_size)
-:BUFFER_SIZE(buffer_size){
+
+Connection::Connection(int client_socket, std::string client_ip, size_t buffer_size, ThreadResource& resource)
+:BUFFER_SIZE(buffer_size), client_ip_(std::move(client_ip)), resource_(resource){
     client_socket_ = client_socket;
-    client_ip_ = client_ip;
 }
 
 Connection::~Connection() = default;
 
 void Connection::set_event_callback(std::function<void(Connection*, uint32_t)> event_callback){
     event_callback_ = std::move(event_callback);
-}
-
-void Connection::set_task_queue(TaskQueue* task_queue){
-    task_queue_ = task_queue;
 }
 
 int Connection::get_socket(){
@@ -41,8 +38,7 @@ void Connection::recv_message(){
         }
         else if(bytes_read==0){
             // 客户端关闭（发送fin包）
-            std::cout<<"客户端IP: "<<client_ip_<<"关闭"<<std::endl;
-            task_queue_->push(new Task(this, TaskType::DEL_CONNECTION));
+            self_close();
             // event_callback_(this, 1);
             break;
         }
@@ -54,7 +50,7 @@ void Connection::recv_message(){
         }
         else{
             std::cerr<<"客户端"<<client_ip_<<"发生错误:"<<errno<<std::endl;
-            task_queue_->push(new Task(this, TaskType::DEL_CONNECTION));
+            self_close();
             // event_callback_(this, 1);
             break;
         }
@@ -66,4 +62,10 @@ void Connection::send_message(){
     if(send(client_socket_, send_buffer_.data(), send_buffer_.size(), 0)<0)
         std::cerr<<"发送客户端回信失败"<<std::endl;
     std::cout<<"无数据可读"<<std::endl;
+}
+
+void Connection::self_close(){
+    is_closed_.store(true, std::memory_order_release);
+    std::cout<<"客户端IP: "<<client_ip_<<"关闭"<<std::endl;
+    resource_.add_task(std::make_unique<DelConnection>(client_socket_));
 }
