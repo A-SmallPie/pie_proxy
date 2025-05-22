@@ -1,3 +1,4 @@
+#pragma once
 #include <queue>
 #include <mutex>
 #include <memory>
@@ -24,6 +25,6 @@ public:
     void push(std::unique_ptr<BaseTask> task);
     std::unique_ptr<BaseTask> pop();
     bool try_pop(std::unique_ptr<BaseTask>& task);
-    bool is_empty() const;
-    size_t size() const;
+    bool is_empty()const;
+    size_t size()const;
 };

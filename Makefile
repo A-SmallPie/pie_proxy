@@ -36,7 +36,7 @@ TARGETS := $(BIN_DIR)/client $(BIN_DIR)/server
 # 在依赖分析阶段就会构建完整的依赖图CAG，因此在发现client需要client需要client.o的时候就会立刻跳转过去生成client.o
 all: $(TARGETS)
 
-$(shell mkdir -p $(OBJ_DIR)/client $(OBJ_DIR)/server $(DEP_DIR)/client $(DEP_DIR)/server $(BIN_DIR))
+$(shell mkdir -p $(OBJ_DIR)/client $(OBJ_DIR)/server $(OBJ_DIR)/server/task $(DEP_DIR)/client $(DEP_DIR)/server $(DEP_DIR)/server/task $(BIN_DIR))
 
 # 后面生成的文件为clent.o，但是目标名称可以不叫这个
 # -c为只编译不链接，编译就是把代码翻译成机器能看懂的东西， -o用来指定输出文件的文件名和位置

@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <iostream>
 #include <sys/epoll.h>
+#include "server/connection.hpp"
 #include "server/thread_resource.hpp"
 #include "server/task/add_connection.hpp"
 

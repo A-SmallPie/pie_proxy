@@ -1,6 +1,7 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable>
+#include "server/task/base.hpp"
 #include "server/task_queue.hpp"
 
 TaskQueue::TaskQueue() = default;

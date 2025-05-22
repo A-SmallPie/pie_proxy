@@ -1,3 +1,5 @@
+#include <string>
+#include <memory>
 #include "base.hpp"
 #include "server/thread_resource.hpp"
 

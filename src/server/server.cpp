@@ -1,6 +1,3 @@
-#include "server/thread_pool.hpp"
-#include "server/connection.hpp"
-#include "server/task.hpp"
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +7,11 @@
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <netdb.h>
+#include "server/thread_pool.hpp"
+#include "server/connection.hpp"
+#include "server/task/base.hpp"
+#include "server/task/add_connection.hpp"
+
 
 #define BACK_LOG 5
 #define BUFFER_SIZE 1024
@@ -121,7 +123,7 @@ int main(int argc, char *argv[])
         inet_ntop(AF_INET, &client_addr.sin_addr, client_IP, INET_ADDRSTRLEN);
         std::cout<<"[主线程] 接受端连接："<<client_IP<<": "<<ntohs(client_addr.sin_addr.s_addr)<<std::endl;
         
-        thread_pool->dispatchTask(new Task(new Connection(client_socket, client_IP, 4096), TaskType::ADD_CONNECTION));
+        thread_pool->dispatchTask(std::make_unique<AddConnection>(client_socket, client_IP, 4096));
 
     }
     close(server_socket);

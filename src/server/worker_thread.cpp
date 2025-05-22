@@ -31,13 +31,15 @@ void WorkerThread::run(){
         int n = epoll_wait(resource_->get_epoll_fd(), events, MAX_EVENT, 0);
         for(int i=0; i<n; i++){
             Connection* connection = (Connection*)events[i].data.ptr;
-
             // 客户端是否已经关闭或者发生了错误
             // 如果客户端只是暂时传完了数据怎么办
             // 非阻塞模式下不应循环调用 recv()，而是依赖 epoll_wait 的事件驱动。
             // 不能只靠这两个事件(EPOLLHUP,EPOLLERR)监听关闭
             if(events[i].events & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)){
-                handle_del_connection(connection);
+                int fd = events->data.fd;
+                resource_->epoll_mod(fd, EPOLL_CTL_DEL,  nullptr);
+                resource_->remove_connection(fd);
+                close(fd);
                 continue;
             }
             else if(events[i].events & EPOLLIN){
