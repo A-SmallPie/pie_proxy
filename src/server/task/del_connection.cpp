@@ -3,13 +3,13 @@
 #include "server/task/del_connection.hpp"
 
 DelConnection::DelConnection(int fd){
-    fd_ = fd;
+    client_socket_ = fd;
 }
 
 DelConnection::~DelConnection()=default;
 
 void DelConnection::run(ThreadResource& res){
-    res.epoll_mod(fd_, EPOLL_CTL_DEL, nullptr);
-    res.remove_connection(fd_);
-    close(fd_);
+    res.epoll_mod(client_socket_, EPOLL_CTL_DEL, nullptr);
+    res.remove_connection(client_socket_);
+    close(client_socket_);
 }

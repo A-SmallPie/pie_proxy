@@ -36,6 +36,7 @@ void WorkerThread::run(){
             // 非阻塞模式下不应循环调用 recv()，而是依赖 epoll_wait 的事件驱动。
             // 不能只靠这两个事件(EPOLLHUP,EPOLLERR)监听关闭
             if(events[i].events & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)){
+                std::cerr<<"[线程"<<ID_<<"]: 客户端出错，关闭连接"<<std::endl;
                 int fd = events->data.fd;
                 resource_->epoll_mod(fd, EPOLL_CTL_DEL,  nullptr);
                 resource_->remove_connection(fd);
@@ -43,7 +44,11 @@ void WorkerThread::run(){
                 continue;
             }
             else if(events[i].events & EPOLLIN){
+                resource_->remove_time_out_connection();
                 connection->recv_message();
+            }
+            else if(events[i].events & EPOLLOUT){
+                connection->send_message();
             }
         }
     }

@@ -3,7 +3,7 @@
 
 class DelConnection: public Task<DelConnection>{
 private:
-    int fd_;
+    int client_socket_;
 public:
     explicit DelConnection(int fd);
     ~DelConnection();

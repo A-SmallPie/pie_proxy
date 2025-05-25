@@ -6,7 +6,7 @@
 BaseTask::~BaseTask()=default;
 
 void BaseTask::execute(ThreadResource& resource){
-    std::cout<<"线程"<<resource.get_id()<<" 尝试使用基础Task"<<std::endl;
+    std::cout<<"[线程"<<resource.get_id()<<"]: 尝试使用基础Task"<<std::endl;
     throw std::runtime_error("未实现execute方法");
 }
 

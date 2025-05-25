@@ -5,9 +5,9 @@
 
 class AddConnection: public Task<AddConnection>{
 private:
-    int fd_;
-    std::string ip_;
-    const size_t BUFFER_SIZE;
+    int client_socket_;
+    std::string client_ip_;
+    const size_t RECV_BUFFER_SIZE;
 public:
     explicit AddConnection(int fd, std::string ip, size_t buffer_size);
     ~AddConnection();

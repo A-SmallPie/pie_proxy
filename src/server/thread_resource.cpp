@@ -5,7 +5,7 @@ ThreadResource::ThreadResource(size_t id, size_t max_event):
 ID_(id), MAX_EVENT(max_event), queue_(), manager_(){
     epoll_fd_ = epoll_create1(0);
     if(epoll_fd_<0){
-        std::cerr<<"[工作线程] 线程"<<ID_<<": 创建epoll实例失败"<<std::endl;
+        std::cerr<<"[线程"<<ID_<<"]: 创建epoll实例失败"<<std::endl;
         exit(EXIT_FAILURE);
     }
 }
@@ -28,7 +28,7 @@ int ThreadResource::get_epoll_fd() const{
 bool ThreadResource::epoll_add(int fd, epoll_event* event){
     if(epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, fd, event)==-1){
         manager_.remove_connection(fd);
-        std::cerr<<"[工作线程] 线程"<<ID_<<": 添加连接事件监听失败"<<std::endl;
+        std::cerr<<"[线程"<<ID_<<"]: 添加连接事件监听失败"<<std::endl;
         return false;
     }
     return true;
@@ -36,7 +36,7 @@ bool ThreadResource::epoll_add(int fd, epoll_event* event){
 
 bool ThreadResource::epoll_mod(int fd, int op, epoll_event* event=nullptr){
     if(epoll_ctl(epoll_fd_, op, fd, event)==-1){
-        std::cerr<<"线程"<<ID_<<" 执行epoll操作失败";
+        std::cerr<<"[线程"<<ID_<<"]: 执行epoll操作"<<op<<"失败"<<std::endl;
         return false;
     }
     return true;

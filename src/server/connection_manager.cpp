@@ -16,5 +16,11 @@ bool ConnectionManager::remove_connection(int fd){
 }
 
 size_t ConnectionManager::remove_time_out_connection(){
+    for (const auto& entry : connection_map_) {
+        int fd = entry.first;
+        auto connection = entry.second;
+        std::cout << "FD: " << fd << ", shared_ptr count: " << connection.use_count() << std::endl;
+        std::cout << "FD: " << fd << ", IP" << connection->get_ip() << std::endl;
+    }
     return 1;
 }
