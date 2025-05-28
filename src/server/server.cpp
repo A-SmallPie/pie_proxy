@@ -8,9 +8,9 @@
 #include <ifaddrs.h>
 #include <netdb.h>
 #include "server/thread_pool.hpp"
-#include "server/connection.hpp"
-#include "server/task/base.hpp"
-#include "server/task/add_connection.hpp"
+#include "server/server_conn.hpp"
+#include "common/task/base.hpp"
+#include "common/task/add_connection.hpp"
 
 
 #define BACK_LOG 5

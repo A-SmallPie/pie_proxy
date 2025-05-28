@@ -1,4 +1,4 @@
-#include "server/task/base.hpp"
+#include "common/task/base.hpp"
 #include "server/thread_resource.hpp"
 
 ThreadResource::ThreadResource(size_t id, size_t max_event):
@@ -57,7 +57,7 @@ bool ThreadResource::try_pop_task(std::unique_ptr<BaseTask>& task){
 }
 
 // 透传连接管理器方法
-bool ThreadResource::add_connection(std::shared_ptr<Connection> connection){
+bool ThreadResource::add_connection(std::shared_ptr<ServerConn> connection){
     return manager_.add_connection(connection);
 }
 

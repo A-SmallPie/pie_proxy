@@ -1,6 +1,6 @@
 #include <unistd.h>
 #include "server/thread_resource.hpp"
-#include "server/task/del_connection.hpp"
+#include "common/task/del_connection.hpp"
 
 DelConnection::DelConnection(int fd){
     client_socket_ = fd;

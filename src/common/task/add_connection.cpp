@@ -2,9 +2,9 @@
 #include <fcntl.h>
 #include <iostream>
 #include <sys/epoll.h>
-#include "server/connection.hpp"
+#include "server/server_conn.hpp"
 #include "server/thread_resource.hpp"
-#include "server/task/add_connection.hpp"
+#include "common/task/add_connection.hpp"
 
 AddConnection::AddConnection(int fd, std::string ip, size_t buffer_size)
 :RECV_BUFFER_SIZE(buffer_size){
@@ -28,7 +28,9 @@ void AddConnection::run(ThreadResource& res){
     struct epoll_event event;
     event.events = EPOLLIN | EPOLLRDHUP | EPOLLET;
     event.data.fd = client_socket_;
-    std::shared_ptr<Connection> connection = std::make_shared<Connection>(client_socket_, client_ip_, RECV_BUFFER_SIZE, std::move(event), res);
+    std::shared_ptr<ServerConn> connection = std::make_shared<ServerConn>(client_socket_, client_ip_, RECV_BUFFER_SIZE, std::move(event), res);
     res.add_connection(connection);
     std::cerr<<"[线程"<<res.get_id()<<"]: 连接"<<client_ip_<<"添加成功"<<std::endl; 
 }
+
+

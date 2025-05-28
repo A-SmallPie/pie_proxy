@@ -1,5 +1,5 @@
-#include "connection.hpp"
-#include "connection_pool.hpp"
+#include "proxy/connection.hpp"
+#include "proxy/connection_pool.hpp"
 #include <mutex>
 
 /*

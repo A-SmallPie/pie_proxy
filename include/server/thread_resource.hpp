@@ -1,10 +1,10 @@
 #pragma once
 #include <memory>
 #include <sys/epoll.h>
-#include "task_queue.hpp"
+#include "common/task_queue.hpp"
 #include "connection_manager.hpp"
 class BaseTask;
-class Connection;
+class ServerConn;
 
 // 必须包含类完整的头文件，因为类做了成员变量，就必须知道这个类的完整定义
 class ThreadResource{
@@ -29,7 +29,7 @@ public:
     std::unique_ptr<BaseTask> pop_task();
     bool try_pop_task(std::unique_ptr<BaseTask>& task);
     // 透传连接管理器的方法
-    bool add_connection(std::shared_ptr<Connection> connection);
+    bool add_connection(std::shared_ptr<ServerConn> connection);
     bool remove_connection(int fd);
     size_t remove_time_out_connection();
 };

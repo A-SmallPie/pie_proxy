@@ -1,6 +1,6 @@
-#include "server/task/base.hpp"
-#include "server/task/del_connection.hpp"
-#include "server/task/add_connection.hpp"
+#include "common/task/base.hpp"
+#include "common/task/del_connection.hpp"
+#include "common/task/add_connection.hpp"
 #include "server/thread_resource.hpp"
 
 BaseTask::~BaseTask()=default;

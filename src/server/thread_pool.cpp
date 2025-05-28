@@ -1,7 +1,7 @@
 #include <thread>
 #include <sstream>
 #include <iostream>
-#include "server/task/base.hpp"
+#include "common/task/base.hpp"
 #include "server/thread_pool.hpp"
 #include "server/worker_thread.hpp"
 
