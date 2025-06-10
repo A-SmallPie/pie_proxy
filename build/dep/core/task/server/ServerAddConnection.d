@@ -1,21 +1,22 @@
-build/obj/server/worker_thread.o: src/server/worker_thread.cpp \
- include/core/task/base/BaseTask.hpp include/core/common/TaskQueue.hpp \
+build/obj/core/task/server/ServerAddConnection.o: \
+ src/core/task/server/ServerAddConnection.cpp \
+ include/core/task/base/BaseTask.hpp \
  include/core/connection/ServerConnection.hpp \
  include/core/connection/BaseConnection.hpp \
- include/server/WorkerThread.hpp \
  include/core/resource/ServerThreadResource.hpp \
- include/server/ConnectionManager.hpp
+ include/core/common/TaskQueue.hpp include/server/ConnectionManager.hpp \
+ include/core/task/server/ServerAddConnection.hpp
 
 include/core/task/base/BaseTask.hpp:
-
-include/core/common/TaskQueue.hpp:
 
 include/core/connection/ServerConnection.hpp:
 
 include/core/connection/BaseConnection.hpp:
 
-include/server/WorkerThread.hpp:
-
 include/core/resource/ServerThreadResource.hpp:
 
+include/core/common/TaskQueue.hpp:
+
 include/server/ConnectionManager.hpp:
+
+include/core/task/server/ServerAddConnection.hpp:

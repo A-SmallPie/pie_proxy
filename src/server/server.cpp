@@ -1,17 +1,16 @@
+#include <netdb.h>
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <ifaddrs.h>
-#include <netdb.h>
-#include "server/thread_pool.hpp"
-#include "server/server_conn.hpp"
-#include "common/task/base.hpp"
-#include "common/task/add_connection.hpp"
-
+#include "core/task/base/BaseTask.hpp"
+#include "server/ThreadPool.hpp"
+#include "core/connection/ServerConnection.hpp"
+#include "core/task/server/ServerAddConnection.hpp"
 
 #define BACK_LOG 5
 #define BUFFER_SIZE 1024
@@ -123,7 +122,7 @@ int main(int argc, char *argv[])
         inet_ntop(AF_INET, &client_addr.sin_addr, client_IP, INET_ADDRSTRLEN);
         std::cout<<"[主线程]: 接受端连接："<<client_IP<<": "<<ntohs(client_addr.sin_addr.s_addr)<<std::endl;
         
-        thread_pool->dispatchTask(std::make_unique<AddConnection>(client_socket, client_IP, 4096));
+        thread_pool->dispatchTask(std::make_unique<ServerAddConnection>(client_socket, client_IP, 4096));
 
     }
     close(server_socket);

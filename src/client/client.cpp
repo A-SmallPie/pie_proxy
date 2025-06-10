@@ -1,11 +1,11 @@
+#include <fcntl.h>
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#include <fcntl.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 #define BUFFER_SIZE 1024
 
