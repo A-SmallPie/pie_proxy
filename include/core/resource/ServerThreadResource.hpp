@@ -1,13 +1,15 @@
 #pragma once
 #include <memory>
 #include <sys/epoll.h>
+#include "BaseResource.hpp"
 #include "core/common/TaskQueue.hpp"
 #include "server/ConnectionManager.hpp"
 class BaseTask;
 class ServerConnection;
 
 // 必须包含类完整的头文件，因为类做了成员变量，就必须知道这个类的完整定义
-class ServerThreadResource{
+class ServerThreadResource:
+public BaseResource{
 private:
     const size_t ID_;
     int epoll_fd_;

@@ -2,7 +2,7 @@
 #include "core/resource/ServerThreadResource.hpp"
 
 ServerThreadResource::ServerThreadResource(size_t id, size_t max_event):
-ID_(id), MAX_EVENT(max_event), queue_(), manager_(){
+BaseResource(), ID_(id), MAX_EVENT(max_event), queue_(), manager_(){
     epoll_fd_ = epoll_create1(0);
     if(epoll_fd_<0){
         std::cerr<<"[线程"<<ID_<<"]: 创建epoll实例失败"<<std::endl;

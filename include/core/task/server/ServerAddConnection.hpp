@@ -1,7 +1,7 @@
 #include <string>
 #include <memory>
 #include "../base/BaseTask.hpp"
-#include "core/resource/ServerThreadResource.hpp"
+#include "core/resource/ResourceVariant.hpp"
 
 class ServerAddConnection: public Task<ServerAddConnection>{
 private:
@@ -11,5 +11,5 @@ private:
 public:
     explicit ServerAddConnection(int fd, std::string ip, size_t buffer_size);
     ~ServerAddConnection();
-    void run(ServerThreadResource& res);
+    void run(const ResourceVariant res);
 };

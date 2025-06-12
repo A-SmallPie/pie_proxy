@@ -47,6 +47,7 @@
         "functional": "cpp",
         "iterator": "cpp",
         "map": "cpp",
-        "cstring": "cpp"
+        "cstring": "cpp",
+        "variant": "cpp"
     }
 }

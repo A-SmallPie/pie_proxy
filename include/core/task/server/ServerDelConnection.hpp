@@ -1,5 +1,5 @@
 #include "core/task/base/BaseTask.hpp"
-#include "core/resource/ServerThreadResource.hpp"
+#include "core/resource/ResourceVariant.hpp"
 
 class ServerDelConnection: public Task<ServerDelConnection>{
 private:
@@ -7,5 +7,5 @@ private:
 public:
     explicit ServerDelConnection(int fd);
     ~ServerDelConnection();
-    void run(ServerThreadResource& res);
+    void run(const ResourceVariant res);
 };

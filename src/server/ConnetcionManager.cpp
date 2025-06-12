@@ -6,7 +6,7 @@ ConnectionManager::ConnectionManager() = default;
 ConnectionManager::~ConnectionManager() = default;
 
 bool ConnectionManager::add_connection(std::shared_ptr<ServerConnection> connection){
-    connection_map_.emplace(connection->get_socket(), std::move(connection));
+    connection_map_.emplace(connection->get_fd(), std::move(connection));
     return true;
 }
 

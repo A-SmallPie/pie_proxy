@@ -1,17 +1,12 @@
 #include "core/task/base/BaseTask.hpp"
 #include "core/task/server/ServerDelConnection.hpp"
 #include "core/task/server/ServerAddConnection.hpp"
-#include "core/resource/ServerThreadResource.hpp"
+#include "core/resource/ResourceVariant.hpp"
 
 BaseTask::~BaseTask()=default;
 
-void BaseTask::execute(ServerThreadResource& resource){
-    std::cout<<"[线程"<<resource.get_id()<<"]: 尝试使用基础Task"<<std::endl;
-    throw std::runtime_error("未实现execute方法");
-}
-
 template <typename Impl>
-void Task<Impl>::execute(ServerThreadResource& res){
+void Task<Impl>::execute(const ResourceVariant res){
     static_cast<Impl*>(this)->run(res);
 };
 
