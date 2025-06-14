@@ -24,7 +24,7 @@ void WorkerThread::run(){
     while(true){
         std::unique_ptr<BaseTask> task;
         while(resource_->try_pop_task(task)){
-            task->execute(std::move(ResourceVariant{resource_.get()}));
+            task->execute(ResourceVariant{resource_.get()});
         }
         // 如果等待不到就绪的事件就去偷任务还是在任务队列里没有任务就直接去偷任务
         // 设置等待时间=0，如果没有就绪的时间就立刻去干别的
